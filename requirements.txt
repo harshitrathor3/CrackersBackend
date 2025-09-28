@@ -1,0 +1,6 @@
+# Basic
+fastapi
+uvicorn
+
+# DB
+
