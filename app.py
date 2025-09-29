@@ -1,11 +1,8 @@
-# import asyncio
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# from APIs.home.view import home_router
-# from APIs.project.view import project_router
-# from APIs.db_preprocessing import db_preparation
+from items.view import item_router
 
 
 
@@ -27,8 +24,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-# app.include_router(home_router)
-# app.include_router(project_router)
+app.include_router(item_router)
 
 @app.get("/")
 def root():
@@ -36,4 +32,4 @@ def root():
 
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)

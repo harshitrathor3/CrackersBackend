@@ -3,3 +3,15 @@ online payment
 show suggested items to add to cart
 refer and earn discounts
 
+
+
+
+
+
+table structure
+
+
+id, Name, Category, Company, Price, Pieces, Description
+
+1, Anar, Regular, Anil, 100, 10, “Very colourful Anar”
+2, Sutili Bomb, Bomb, Anil, 80, 5, “great sound”

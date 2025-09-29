@@ -2,5 +2,8 @@
 fastapi
 uvicorn
 
-# DB
+# config
+python-dotenv
 
+# DB
+pymongo
