@@ -6,7 +6,7 @@ uvicorn
 python-dotenv
 
 # DB
-pymongo
+motor
 
 # Visualize API call metrics
 prometheus-fastapi-instrumentator

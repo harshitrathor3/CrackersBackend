@@ -4,6 +4,8 @@ show suggested items to add to cart
 refer and earn discounts
 
 
+create a dashboard where all items are visible category wise, and admin can edit, add or delete items
+
 
 
 
@@ -11,7 +13,7 @@ refer and earn discounts
 table structure
 
 
-id, Name, Category, Company, Price, Pieces, available_quantity, Description
+id, Name, Category, Company, Size, Price, Pieces, available_quantity, Description
 
-1, Anar, Regular, Anil, 100, 10, 1000, “Very colourful Anar”
-2, Sutili Bomb, Bomb, Anil, 80, 5, 1000, “great sound”
+1, Anar, Regular, Anil, 5cm, 100, 10, 1000, “Very colourful Anar”
+2, Sutili Bomb, Bomb, Anil, 5cm, 80, 5, 1000, “great sound”
