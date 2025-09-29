@@ -1,12 +1,14 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from items.view import item_router
 
 
 
 app = FastAPI(title="Crackers Backend")
+Instrumentator().instrument(app).expose(app)
 
 origins = [
     "http://localhost",

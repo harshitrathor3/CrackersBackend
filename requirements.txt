@@ -7,3 +7,6 @@ python-dotenv
 
 # DB
 pymongo
+
+# Visualize API call metrics
+prometheus-fastapi-instrumentator
