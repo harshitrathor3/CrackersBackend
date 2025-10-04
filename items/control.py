@@ -11,19 +11,16 @@ async def get_all_items():
     try:
         res = []
         async for item in db.items.find({}):
-            res.append(
-                {
+                new_item_dict = {
                     "_id": str(item.get("_id", None)),
                     "name": item.get("name", None),
-                    "category": item.get("category", None),
                     "company": item.get("company", None),
-                    "size": item.get("size", None),
-                    "price": item.get("price", None),
-                    "pieces": item.get("pieces", None),
-                    "available_quantity": item.get("available_quantity", None),
-                    "description": item.get("description", None)
+                    "description": item.get("description", None),
+                    "size_info": item.get("size_info", None),
+                    "category": dict(item.get("category", {})),
                 }
-            )
+                new_item_dict["category"]["category_id"] = str(new_item_dict["category"].get("category_id", None))
+                res.append(new_item_dict)
 
         return {"items": res}, status.HTTP_200_OK
 
