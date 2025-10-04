@@ -1,28 +1,26 @@
 import pytz
 import traceback
 from db import db
+from bson import ObjectId
 from fastapi import status
 from datetime import datetime
-
+from items.utils import find_category_by_id
 
 
 async def get_all_items():
     try:
         res = []
         async for item in db.items.find({}):
-            res.append(
-                {
+                new_item_dict = {
                     "_id": str(item.get("_id", None)),
                     "name": item.get("name", None),
-                    "category": item.get("category", None),
                     "company": item.get("company", None),
-                    "size": item.get("size", None),
-                    "price": item.get("price", None),
-                    "pieces": item.get("pieces", None),
-                    "available_quantity": item.get("available_quantity", None),
-                    "description": item.get("description", None)
+                    "description": item.get("description", None),
+                    "size_info": item.get("size_info", None),
+                    "category": dict(item.get("category", {})),
                 }
-            )
+                new_item_dict["category"]["category_id"] = str(new_item_dict["category"].get("category_id", None))
+                res.append(new_item_dict)
 
         return {"items": res}, status.HTTP_200_OK
 
@@ -34,24 +32,33 @@ async def get_all_items():
 
 async def add_item(item_data):
     try:
-        # Check if item with same name and company already exists
+        category_id = item_data.pop("category_id", None)
+        category_name = await find_category_by_id(category_id)
+        print("Category name:", category_name)
+
+        if category_name is None or category_name == "":
+            return {"message": "Invalid category ID"}, status.HTTP_400_BAD_REQUEST
+
+        # Check if item with same name and company already exists - # TODO: improve this logic
         existing_item = await db.items.find_one(
             {
                 "name": item_data.get("name", None),
-                "category": item_data.get("category", None),
                 "company": item_data.get("company", None),
-                "size": item_data.get("size", None),
-                "price": item_data.get("price", None),
-                "pieces": item_data.get("pieces", None),
             }
         )
         if existing_item:
             return {"message": "Item with same name and company already exists"}, status.HTTP_400_BAD_REQUEST
 
-        # Insert new item
-        await db.items.insert_one(item_data)
-        return {"message": "Item added successfully"}, status.HTTP_201_CREATED
+        item_data['category'] = {
+            "category_id": ObjectId(category_id),
+            "category_name": category_name
+        }
 
+        print("Final item data to be inserted:", item_data)
+
+        await db.items.insert_one(item_data)
+
+        return {"message": "Item added successfully"}, status.HTTP_201_CREATED
     except Exception as e:
         print("Error in add_item:", e)
         traceback.print_exc()
