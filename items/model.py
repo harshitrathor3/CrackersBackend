@@ -10,3 +10,8 @@ class Item(BaseModel):
     available_quantity: int
     description: str
 
+
+
+class Category(BaseModel):
+    name: str
+    description: str

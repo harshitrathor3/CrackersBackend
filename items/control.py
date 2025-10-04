@@ -1,6 +1,8 @@
+import pytz
 import traceback
 from db import db
 from fastapi import status
+from datetime import datetime
 
 
 
@@ -54,3 +56,57 @@ async def add_item(item_data):
         print("Error in add_item:", e)
         traceback.print_exc()
         return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+async def get_all_categories():
+    try:
+        res = []
+        async for category in db.categories.find({}):
+            created_at = category.get("created_at", None)
+            if created_at:
+                # Convert UTC to IST for response
+                ist = pytz.timezone('Asia/Kolkata')
+                created_at = created_at.replace(tzinfo=pytz.UTC).astimezone(ist)
+
+            res.append(
+                {
+                    "_id": str(category.get("_id", None)),
+                    "name": category.get("name", None),
+                    "created_at": created_at.isoformat() if created_at else None,
+                    "description": category.get("description", None)
+                }
+            )
+        
+        print(res)
+        return {"categories": res}, status.HTTP_200_OK
+    except Exception as e:
+        print("Error in get_all_categories:", e)
+        traceback.print_exc()
+        return {"message": "Internal Server Error","categories": []}, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+async def add_category(category_data):
+    try:
+        # Check if category with same name already exists
+        existing_category = await db.categories.find_one(
+            {
+                "name": category_data.get("name", None),
+            }
+        )
+        if existing_category:
+            return {"message": "Category with same name already exists"}, status.HTTP_400_BAD_REQUEST
+
+        # Insert new category
+        # Add created_at timestamp in IST
+        ist = pytz.timezone('Asia/Kolkata')
+        category_data['created_at'] = datetime.now(ist)
+        
+        await db.categories.insert_one(category_data)
+        return {"message": "Category added successfully"}, status.HTTP_201_CREATED
+
+    except Exception as e:
+        print("Error in add_category:", e)
+        traceback.print_exc()
+        return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
