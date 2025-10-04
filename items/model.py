@@ -1,15 +1,19 @@
+from typing import Dict
 from pydantic import BaseModel
 
-class Item(BaseModel):
-    name: str
-    category: str
-    company: str
+class SizeInfo(BaseModel):
     size: str
     price: float
     pieces: int
-    available_quantity: int
-    description: str
+    available_qty: int
 
+
+class Item(BaseModel):
+    name: str
+    category_id: str
+    company: str
+    description: str
+    size_info: Dict[str, SizeInfo]
 
 
 class Category(BaseModel):
