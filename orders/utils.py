@@ -44,6 +44,8 @@ async def get_category_wise_items(item_id, item_info):
 
         category_id = item.get("category", {}).get("category_id", "")
         print("category_id:", category_id)
+
+        # TODO cache category names in memory to avoid multiple DB calls
         category_name = await db.categories.find_one({"_id": ObjectId(category_id)})
         print("category_name:", category_name)
         category_name = category_name.get("name", "")
