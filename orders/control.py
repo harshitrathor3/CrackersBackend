@@ -8,6 +8,36 @@ from orders.model import OrderItem
 from orders.utils import validate_ids_and_qty
 
 
+
+
+async def get_orders():
+    try:
+        orders = []
+        async for order in db.orders.find({}):
+            order_date = order.get("order_date", None)
+            if order_date:
+                ist = pytz.timezone('Asia/Kolkata')
+                order_date = order_date.replace(tzinfo=pytz.UTC).astimezone(ist)
+            orders.append(
+                {
+                    "order_id": str(order["_id"]),
+                    "first_name": order.get("first_name", ""),
+                    "last_name": order.get("last_name", ""),
+                    "mobile": order.get("mobile", ""),
+                    "total_amt": order.get("total_amt", 0),
+                    "status": order.get("status", ""),
+                    "order_date": order_date.isoformat() if order_date else None,
+                }
+            )
+
+        return {"orders": orders}, status.HTTP_200_OK
+    except Exception as e:
+        print("Error occurred while fetching orders:", e)
+        traceback.print_exc()
+        return {"message": str(e), "orders": orders}, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+
 async def place_order(order_data):
     try:
         # check correct size_ids
