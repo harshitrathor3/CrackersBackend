@@ -5,7 +5,7 @@ from bson import ObjectId
 from fastapi import status
 from datetime import datetime
 from orders.model import OrderItem
-from orders.utils import validate_ids_and_qty
+from orders.utils import validate_ids_and_qty, get_category_wise_items
 
 
 
@@ -31,8 +31,8 @@ async def get_orders():
             )
 
         return {
+            "total_orders": len(orders),
             "orders": orders,
-            "total_orders": len(orders)
         }, status.HTTP_200_OK
     except Exception as e:
         print("Error occurred while fetching orders:", e)
@@ -90,6 +90,56 @@ async def place_order(order_data):
 
     except Exception as e:
         print("Error occurred while placing order:", e)
+        traceback.print_exc()
+        return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+async def get_items_for_order(order_id):
+    try:
+        if not ObjectId.is_valid(order_id):
+            return {"message": "Invalid order_id"}, status.HTTP_400_BAD_REQUEST
+
+        order_obj_id = ObjectId(order_id)
+        order = await db.orders.find_one({"_id": order_obj_id})
+        if not order:
+            return {"message": "Order not found"}, status.HTTP_404_NOT_FOUND
+
+        first_name = order.get("first_name", "")
+        last_name = order.get("last_name", "")
+        mobile = order.get("mobile", "")
+        order_date = order.get("order_date", None)
+        order_status = order.get("status", "")
+        total_amt = order.get("total_amt", 0)
+        items = order.get("items", {})
+
+        if order_date:
+            ist = pytz.timezone('Asia/Kolkata')
+            order_date = order_date.replace(tzinfo=pytz.UTC).astimezone(ist)
+            order_date = order_date.isoformat()
+
+        category_wise_items = {}
+        for item_id, item_info in items.items():
+            category, order_item = await get_category_wise_items(item_id, item_info)
+            items_list = category_wise_items.get(category, [])
+            items_list.append(order_item)
+            category_wise_items[category] = items_list
+
+        result = {
+            "order_id": order_id,
+            "first_name": first_name,
+            "last_name": last_name,
+            "mobile": mobile,
+            "order_date": order_date,
+            "order_status": order_status,
+            "total_amt": total_amt,
+            "category_wise_items": category_wise_items,
+        }
+
+        return result, status.HTTP_200_OK
+
+
+    except Exception as e:
+        print("Error occurred while fetching items for order:", e)
         traceback.print_exc()
         return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
 

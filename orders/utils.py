@@ -1,5 +1,6 @@
 import traceback
 from db import db
+from bson import ObjectId
 
 
 
@@ -30,4 +31,51 @@ async def validate_ids_and_qty(item_obj_id, item_info):
         traceback.print_exc()
         print("Error in validate_size_ids_and_qty:", e)
         return False, "Internal Server Error: " + str(e), 0
+
+
+
+async def get_category_wise_items(item_id, item_info):
+    try:
+        item = await db.items.find_one({"_id": ObjectId(item_id)})
+        if not item:
+            return "", {}
+        
+        print("Item found:", item)
+
+        category_id = item.get("category", {}).get("category_id", "")
+        print("category_id:", category_id)
+        category_name = await db.categories.find_one({"_id": ObjectId(category_id)})
+        print("category_name:", category_name)
+        category_name = category_name.get("name", "")
+
+        item_name = item.get("name", "")
+        company = item.get("company", "")
+        description = item.get("description", "")
+        size_info_all = item.get("size_info", {})
+        size_info = {}
+
+        for size_id, qty in item_info.items():
+            size_data = size_info_all.get(size_id, {})
+            if size_data:
+                size_info[size_id] = {
+                    "size": size_data.get("size", ""),
+                    "price": size_data.get("price", 0),
+                    "pieces": size_data.get("pieces", 0),
+                    "qty": qty
+                }
+
+        order_item = {
+            "item_name": item_name,
+            "company": company,
+            "description": description,
+            "size_info": size_info
+        }
+
+        return category_name, order_item
+
+    except Exception as e:
+        traceback.print_exc()
+        print("Error in get_category_wise_items:", e)
+        return "", {}
+
 
