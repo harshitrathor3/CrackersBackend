@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from items.view import item_router
+from orders.view import orders_router
 
 
 
@@ -27,10 +28,15 @@ app.add_middleware(
 )
 
 app.include_router(item_router)
+app.include_router(orders_router)
 
 @app.get("/")
 def root():
     return {"message": "Hello World"}
+
+
+
+
 
 
 if __name__ == "__main__":
