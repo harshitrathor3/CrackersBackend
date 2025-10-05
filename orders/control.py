@@ -30,7 +30,10 @@ async def get_orders():
                 }
             )
 
-        return {"orders": orders}, status.HTTP_200_OK
+        return {
+            "orders": orders,
+            "total_orders": len(orders)
+        }, status.HTTP_200_OK
     except Exception as e:
         print("Error occurred while fetching orders:", e)
         traceback.print_exc()
