@@ -127,9 +127,9 @@ async def deduct_stock_for_order(items_with_qty):
                 # Prepare the increment operation (negative value to deduct)
                 inc_operations[f"size_info.{size_id}.available_qty"] = -qty
                 print(f"Will deduct {qty} from item {item_id}, size {size_id}. Current: {available_qty}, New: {available_qty - qty}")
-            
+
             # Only add to bulk operations if all validations passed
-            if all_valid and inc_operations:
+            if inc_operations:
                 bulk_operations.append(
                     UpdateOne(
                         {"_id": item_obj_id},
