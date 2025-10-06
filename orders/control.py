@@ -5,7 +5,7 @@ from bson import ObjectId
 from fastapi import status
 from datetime import datetime
 from orders.model import OrderItem
-from orders.utils import validate_ids_and_qty, get_category_wise_items
+from orders.utils import validate_ids_and_qty, get_category_wise_items, deduct_stock_for_order
 
 
 
@@ -42,6 +42,7 @@ async def get_orders():
 
 
 async def place_order(order_data):
+    # TODO optimize this function, currently making multiple DB calls for each item
     try:
         # check correct size_ids
         # check sufficient stock
@@ -95,6 +96,7 @@ async def place_order(order_data):
 
 
 async def get_items_for_order(order_id):
+    # TODO optimize this, currently making multiple DB calls for each item
     try:
         if not ObjectId.is_valid(order_id):
             return {"message": "Invalid order_id"}, status.HTTP_400_BAD_REQUEST
@@ -140,6 +142,46 @@ async def get_items_for_order(order_id):
 
     except Exception as e:
         print("Error occurred while fetching items for order:", e)
+        traceback.print_exc()
+        return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+async def confirm_order(order_id):
+    try:
+        if not ObjectId.is_valid(order_id):
+            return {"message": "Invalid order_id"}, status.HTTP_400_BAD_REQUEST
+        order_obj_id = ObjectId(order_id)
+
+        # Check if order exists
+        order = await db.orders.find_one({"_id": order_obj_id})
+        if not order:
+            return {"message": "Order not found"}, status.HTTP_404_NOT_FOUND
+
+        items_with_qty = order.get("items", {}).items()
+        print("Items with qty to deduct stock:", items_with_qty)
+
+        # check order status
+        if order.get("status") != "placed":
+            return {"message": "Order is not in 'placed' status"}, status.HTTP_400_BAD_REQUEST
+
+        # deduct stock from inventory
+        await deduct_stock_for_order(items_with_qty)
+
+        # input("check item deducted?")
+
+        # Update order status to 'confirmed'
+        result = await db.orders.update_one(
+            {"_id": order_obj_id},
+            {"$set": {"status": "confirmed"}}
+        )
+
+        if result.modified_count == 1:
+            return {"message": "Order confirmed successfully"}, status.HTTP_200_OK
+        else:
+            return {"message": "Order status was already 'confirmed'"}, status.HTTP_200_OK
+
+    except Exception as e:
+        print("Error occurred while confirming order:", e)
         traceback.print_exc()
         return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
