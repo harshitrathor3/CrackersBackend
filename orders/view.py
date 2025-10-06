@@ -2,7 +2,7 @@ import traceback
 from orders.model import Order
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, Form, File, UploadFile, status
-from orders.control import get_orders, place_order, get_items_for_order
+from orders.control import get_orders, place_order, get_items_for_order, confirm_order
 
 
 
@@ -54,3 +54,19 @@ async def get_items_for_order_route(order_id: str):
         return JSONResponse(content={"message": str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
+@orders_router.post("/confirm_order")
+async def confirm_order_route(payload: dict):
+    try:
+        # TODO add API to quickly undo an order after confirmation
+        order_id = payload.get("order_id")
+        if not order_id:
+            return JSONResponse(content={"message": "order_id is required"}, status_code=status.HTTP_400_BAD_REQUEST)
+        print("Confirming order:", order_id)
+
+        response, status_code = await confirm_order(order_id)
+        return JSONResponse(content=response, status_code=status_code)
+    except Exception as e:
+        print("Error occurred while confirming order:", e)
+        traceback.print_exc()
+        return JSONResponse(content={"message": str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
