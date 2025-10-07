@@ -12,7 +12,7 @@ async def validate_ids_and_qty(item_id, item_info, items_data):
         # validate correct item_id
         if not item_data:
             return False, f"Item with id {item_id} not found", 0
-        print(item_data)
+        # print(item_data)
 
         total_amt = 0
         size_info = item_data.get("size_info", {})
@@ -42,7 +42,7 @@ async def get_category_wise_items(item_id, item_info, items_data, category_data)
         if not item:
             return "", {}
 
-        print("Item found:", item)
+        # print("Item found:", item)
         category_id = item.get("category", {}).get("category_id", None)
         category_id = str(category_id) if category_id else None
         category_name = category_data.get(category_id, "")
