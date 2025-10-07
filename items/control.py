@@ -1,9 +1,11 @@
+import uuid
 import pytz
 import traceback
 from db import db
 from bson import ObjectId
 from fastapi import status
 from datetime import datetime
+from utility.image_utils import ImageUtils
 from items.utils import find_category_by_id
 
 
@@ -30,8 +32,23 @@ async def get_all_items():
         return {"message": "Internal Server Error","items": res}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
-async def add_item(item_data):
+async def add_item(item_data, image):
     try:
+        # Upload image to cloudinary
+        image_utils = ImageUtils(image)
+        image_utils.save_image_locally()
+
+        image_unique_name = f"{item_data.get('name', 'item')}_{uuid.uuid4().hex[:8]}"
+        print("Generated image unique name:", image_unique_name)
+        response, status_code = image_utils.upload_image(public_id=image_unique_name)
+
+        print("Image upload response:", response)
+
+        image_url = None
+        if status_code == status.HTTP_201_CREATED:
+            image_url = response.get("secure_url", None)
+        item_data['image_url'] = image_url
+
         category_id = item_data.pop("category_id", None)
         category_name = await find_category_by_id(category_id)
         print("Category name:", category_name)
@@ -63,6 +80,10 @@ async def add_item(item_data):
         print("Error in add_item:", e)
         traceback.print_exc()
         return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
+    finally:
+        input("should i clean ?")
+        print("Cleaning up local image file...")
+        image_utils.delete_local_saved_image()
 
 
 async def get_all_categories():

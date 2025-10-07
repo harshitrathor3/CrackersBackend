@@ -1,9 +1,10 @@
+import json
 import traceback
 from items.model import Item, Category
+from utility.image_utils import ImageUtils
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, Form, File, UploadFile, status
 from items.control import add_item, get_all_items, get_all_categories, add_category
-
 
 
 
@@ -33,13 +34,28 @@ async def get_all_items_route():
         )
 
 @item_router.post("/add_item")
-async def add_item_route(item_data: Item):
+async def add_item_route(
+    name: str = Form(...),
+    category_id: str = Form(...),
+    company: str = Form(...),
+    description: str = Form(...),
+    size_info: str = Form(...),
+    image: UploadFile = File(...)
+):
     try:
         # TODO add authentication and authorization
-        item_data = item_data.model_dump()
+        item_data = {
+            "name": name,
+            "category_id": category_id,
+            "company": company,
+            "description": description,
+            "size_info": dict(json.loads(size_info))
+        }
+
+        item_data = Item(**item_data).model_dump()
         print("Received item data:", item_data)
 
-        response, status_code = await add_item(item_data)
+        response, status_code = await add_item(item_data, image)
         return JSONResponse(content=response, status_code=status_code)
 
     except Exception as e:
@@ -47,7 +63,7 @@ async def add_item_route(item_data: Item):
         traceback.print_exc()
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"message": "Invalid input data"}
+            content={"message": "Invalid input data" + str(e)}
         )
 
 
@@ -82,4 +98,23 @@ async def add_category_route(category_data: Category):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"message": "Internal Server Error"}
         )
+
+
+
+
+@item_router.post("/test_image")
+def test_image_route(image: UploadFile = File(...)):
+
+    image_utils = ImageUtils(image)
+    image_utils.save_image_locally()
+
+    upload_result, status = image_utils.upload_image(public_id="my_img_uniqq")
+
+    image_utils.delete_local_saved_image()
+
+    print("Upload result:", upload_result)
+    print("Status code:", status)
+
+    return JSONResponse(content={"message": "Image route is healthy"})
+
 
