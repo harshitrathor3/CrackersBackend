@@ -1,6 +1,7 @@
 # Basic
 fastapi
 uvicorn
+python-multipart
 
 # config
 python-dotenv
@@ -11,7 +12,6 @@ motor
 # Visualize API call metrics
 prometheus-fastapi-instrumentator
 
-
-
-#Misclaneous
+# Misclaneous
 pytz
+cloudinary
