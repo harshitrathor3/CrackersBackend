@@ -36,21 +36,18 @@ async def validate_ids_and_qty(item_obj_id, item_info):
 
 
 
-async def get_category_wise_items(item_id, item_info):
+async def get_category_wise_items(item_id, item_info, items_data, category_data):
     try:
-        item = await db.items.find_one({"_id": ObjectId(item_id)})
+        item = items_data.get(item_id, {})
         if not item:
             return "", {}
-        
+
         print("Item found:", item)
-
-        category_id = item.get("category", {}).get("category_id", "")
+        category_id = item.get("category", {}).get("category_id", None)
+        category_id = str(category_id) if category_id else None
+        category_name = category_data.get(category_id, "")
         print("category_id:", category_id)
-
-        # TODO cache category names in memory to avoid multiple DB calls
-        category_name = await db.categories.find_one({"_id": ObjectId(category_id)})
         print("category_name:", category_name)
-        category_name = category_name.get("name", "")
 
         item_name = item.get("name", "")
         company = item.get("company", "")

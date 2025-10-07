@@ -119,9 +119,27 @@ async def get_items_for_order(order_id):
             order_date = order_date.replace(tzinfo=pytz.UTC).astimezone(ist)
             order_date = order_date.isoformat()
 
+        # fetch all items
+        items_data = {str(item["_id"]): item async for item in db.items.find({"_id": {"$in": [ObjectId(item_id) for item_id in items.keys()]}})}
+
+        category_ids = set()
+        for item in items_data.values():
+            category_id = item.get("category", {}).get("category_id", None)
+
+            if ObjectId.is_valid(category_id):
+                category_ids.add(ObjectId(category_id))
+
+        category_data = {str(category["_id"]): category.get("name", "") async for category in db.categories.find({"_id": {"$in": list(category_ids)}})}
+
+        print("Items data fetched for order:", items_data)
+        print("category ids fetched for order:", category_ids)
+        print("category wise items fetched for order:", category_data)
+
+        # input("check items data fetched?")
+
         category_wise_items = {}
         for item_id, item_info in items.items():
-            category, order_item = await get_category_wise_items(item_id, item_info)
+            category, order_item = await get_category_wise_items(item_id, item_info, items_data, category_data)
             items_list = category_wise_items.get(category, [])
             items_list.append(order_item)
             category_wise_items[category] = items_list
