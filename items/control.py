@@ -20,6 +20,7 @@ async def get_all_items():
                     "description": item.get("description", None),
                     "size_info": item.get("size_info", None),
                     "category": dict(item.get("category", {})),
+                    "image_url": item.get("image_url", None),
                 }
                 new_item_dict["category"]["category_id"] = str(new_item_dict["category"].get("category_id", None))
                 res.append(new_item_dict)
