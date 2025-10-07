@@ -6,12 +6,12 @@ from pymongo import UpdateOne
 
 
 
-async def validate_ids_and_qty(item_obj_id, item_info):
+async def validate_ids_and_qty(item_id, item_info, items_data):
     try:
-        item_data = await db.items.find_one({"_id": item_obj_id})
+        item_data = items_data.get(item_id, None)
         # validate correct item_id
         if not item_data:
-            return False, f"Item with id {item_obj_id} not found", 0
+            return False, f"Item with id {item_id} not found", 0
         print(item_data)
 
         total_amt = 0
@@ -19,11 +19,11 @@ async def validate_ids_and_qty(item_obj_id, item_info):
         for size_id, qty in item_info.items():
             # validate correct size_id
             if size_id not in size_info:
-                return False, f"Invalid size_id {size_id} for item {item_obj_id}", 0
+                return False, f"Invalid size_id {size_id} for item {item_id}", 0
 
             # validate sufficient stock
             if size_info[size_id].get("available_qty", 0) < qty:
-                return False, f"Insufficient stock for item {item_obj_id}, size {size_id}", 0
+                return False, f"Insufficient stock for item {item_id}, size {size_id}", 0
 
             total_amt += size_info[size_id].get("price", 0) * qty
 

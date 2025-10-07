@@ -42,7 +42,6 @@ async def get_orders():
 
 
 async def place_order(order_data):
-    # TODO optimize this function, currently making multiple DB calls for each item
     try:
         # check correct size_ids
         # check sufficient stock
@@ -53,16 +52,13 @@ async def place_order(order_data):
 
         items = order_data.get("items", {}).items()
 
+        items_data = {str(item["_id"]): item async for item in db.items.find({"_id": {"$in": [ObjectId(item_id) for item_id, _ in items]}})}
+        # print("Items data fetched for order placement:", items_data)
+
         total_order_amt = 0
         for item_id, item_info in items:
-            # check item_id is valid ObjectId
-            if not ObjectId.is_valid(item_id):
-                return {"message": f"Invalid item_id: {item_id}"}, status.HTTP_400_BAD_REQUEST
-
-            item_obj_id = ObjectId(item_id)
-            
             # validate size_ids and available quantity
-            is_valid, message, total_amt = await validate_ids_and_qty(item_obj_id, item_info)
+            is_valid, message, total_amt = await validate_ids_and_qty(item_id, item_info, items_data)
             if not is_valid:
                 return {"message": message}, status.HTTP_400_BAD_REQUEST
             else:
@@ -96,7 +92,6 @@ async def place_order(order_data):
 
 
 async def get_items_for_order(order_id):
-    # TODO optimize this, currently making multiple DB calls for each item
     try:
         if not ObjectId.is_valid(order_id):
             return {"message": "Invalid order_id"}, status.HTTP_400_BAD_REQUEST
@@ -131,7 +126,7 @@ async def get_items_for_order(order_id):
 
         category_data = {str(category["_id"]): category.get("name", "") async for category in db.categories.find({"_id": {"$in": list(category_ids)}})}
 
-        print("Items data fetched for order:", items_data)
+        # print("Items data fetched for order:", items_data)
         print("category ids fetched for order:", category_ids)
         print("category wise items fetched for order:", category_data)
 
