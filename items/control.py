@@ -81,7 +81,6 @@ async def add_item(item_data, image):
         traceback.print_exc()
         return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
     finally:
-        input("should i clean ?")
         print("Cleaning up local image file...")
         image_utils.delete_local_saved_image()
 
