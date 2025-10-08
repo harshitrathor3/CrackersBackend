@@ -42,7 +42,6 @@ async def add_item(item_data, image):
         image_unique_name = f"{item_data.get('name', 'item')}_{uuid.uuid4().hex[:8]}"
         print("Generated image unique name:", image_unique_name)
         response, status_code = image_utils.upload_image(public_id=image_unique_name)
-
         print("Image upload response:", response)
 
         image_url = None
@@ -51,13 +50,6 @@ async def add_item(item_data, image):
         item_data['image_url'] = image_url
 
         category_id = item_data.pop("category_id", None)
-        # category_name = await find_category_by_id(category_id)
-        # print("Category name:", category_name)
-
-        # if category_name is None or category_name == "":
-        #     return {"message": "Invalid category ID"}, status.HTTP_400_BAD_REQUEST
-
-        # Check if item with same name and company already exists - # TODO: improve this logic
         existing_item = await db.items.find_one(
             {
                 "name": item_data.get("name", None),
@@ -67,9 +59,21 @@ async def add_item(item_data, image):
         if existing_item:
             return {"message": "Item with same name and company already exists"}, status.HTTP_400_BAD_REQUEST
 
+        # calculate discount
+        size_info = item_data.get("size_info", {})
+        for size_id, size_data in size_info.items():
+            mrp = size_data.get("mrp", 0)
+            price = size_data.get("price", 0)
+            if mrp > 0:
+                discount = round(((mrp - price) / mrp) * 100, 2)
+            else:
+                discount = 0.0
+            size_data['discount'] = discount
+            size_info[size_id] = size_data
+
+        item_data['size_info'] = size_info
         item_data['category'] = {
             "category_id": ObjectId(category_id),
-            # "category_name": category_name
         }
 
         print("Final item data to be inserted:", item_data)
