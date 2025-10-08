@@ -15,6 +15,10 @@ async def get_all_items():
         async for item in db.items.find({}):
             new_item_dict = {
                 "_id": str(item.get("_id", None)),
+                "name": item.get("name", None),
+                "company": item.get("company", None),
+                "description": item.get("description", None),
+                "size_info": item.get("size_info", None),
                 "category": dict(item.get("category", {})),
                 "image_url": item.get("image_url", None),
             }
