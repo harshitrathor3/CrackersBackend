@@ -11,28 +11,15 @@ from items.utils import find_category_by_id
 
 async def get_all_items():
     try:
-        # fetch all categories
-        categories = {str(cat["_id"]): cat["name"] async for cat in db.categories.find({})}
-        print("categories:", categories)
-
-        res = {"other": []}
+        res = []
         async for item in db.items.find({}):
             new_item_dict = {
                 "_id": str(item.get("_id", None)),
-                "name": item.get("name", None),
-                "company": item.get("company", None),
-                "description": item.get("description", None),
-                "size_info": item.get("size_info", None),
                 "category": dict(item.get("category", {})),
                 "image_url": item.get("image_url", None),
             }
-
-            category_id = str(item.get("category", {}).get("category_id", ""))
-            category_name = categories.get(category_id, "other")
-            if category_name not in res:
-                res[category_name] = []
-            new_item_dict["category"]["category_id"] = category_id
-            res[category_name].append(new_item_dict)
+            new_item_dict["category"]["category_id"] = str(new_item_dict["category"].get("category_id", None))
+            res.append(new_item_dict)
 
         return {"items": res}, status.HTTP_200_OK
 
@@ -146,4 +133,37 @@ async def add_category(category_data):
         traceback.print_exc()
         return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
+
+
+async def get_all_item_category_wise():
+    try:
+        # fetch all categories
+        categories = {str(cat["_id"]): cat["name"] async for cat in db.categories.find({})}
+        print("categories:", categories)
+
+        res = {"other": []}
+        async for item in db.items.find({}):
+            new_item_dict = {
+                "_id": str(item.get("_id", None)),
+                "name": item.get("name", None),
+                "company": item.get("company", None),
+                "description": item.get("description", None),
+                "size_info": item.get("size_info", None),
+                "category": dict(item.get("category", {})),
+                "image_url": item.get("image_url", None),
+            }
+
+            category_id = str(item.get("category", {}).get("category_id", ""))
+            category_name = categories.get(category_id, "other")
+            if category_name not in res:
+                res[category_name] = []
+            new_item_dict["category"]["category_id"] = category_id
+            res[category_name].append(new_item_dict)
+
+        return {"items": res}, status.HTTP_200_OK
+
+    except Exception as e:
+        print("Error in get_all_items:", e)
+        traceback.print_exc()
+        return {"message": "Internal Server Error","items": res}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
