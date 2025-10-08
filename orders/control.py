@@ -11,6 +11,7 @@ from orders.utils import validate_ids_and_qty, get_category_wise_items, deduct_s
 
 
 async def get_orders():
+    # TODO - short orders with descending/ascending order date
     try:
         orders = []
         async for order in db.orders.find({}):
