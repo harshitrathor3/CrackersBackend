@@ -4,7 +4,7 @@ from items.model import Item, Category
 from utility.image_utils import ImageUtils
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, Form, File, UploadFile, status
-from items.control import add_item, get_all_items, get_all_categories, add_category
+from items.control import add_item, get_all_items, get_all_categories, add_category, get_all_item_category_wise
 
 
 
@@ -117,4 +117,18 @@ def test_image_route(image: UploadFile = File(...)):
 
     return JSONResponse(content={"message": "Image route is healthy"})
 
+
+@item_router.get("/get_all_items_category_wise")
+async def get_all_items_category_wise_route():
+    try:
+        response, status_code = await get_all_item_category_wise()
+        return JSONResponse(content=response, status_code=status_code)
+
+    except Exception as e:
+        print("Error occurred while fetching items:", e)
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal Server Error", "items": []}
+        )
 
