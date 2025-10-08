@@ -11,7 +11,11 @@ from items.utils import find_category_by_id
 
 async def get_all_items():
     try:
-        res = []
+        # fetch all categories
+        categories = {str(cat["_id"]): cat["name"] async for cat in db.categories.find({})}
+        print("categories:", categories)
+
+        res = {"other": []}
         async for item in db.items.find({}):
             new_item_dict = {
                 "_id": str(item.get("_id", None)),
@@ -22,8 +26,13 @@ async def get_all_items():
                 "category": dict(item.get("category", {})),
                 "image_url": item.get("image_url", None),
             }
-            new_item_dict["category"]["category_id"] = str(new_item_dict["category"].get("category_id", None))
-            res.append(new_item_dict)
+
+            category_id = str(item.get("category", {}).get("category_id", ""))
+            category_name = categories.get(category_id, "other")
+            if category_name not in res:
+                res[category_name] = []
+            new_item_dict["category"]["category_id"] = category_id
+            res[category_name].append(new_item_dict)
 
         return {"items": res}, status.HTTP_200_OK
 
@@ -51,11 +60,11 @@ async def add_item(item_data, image):
         item_data['image_url'] = image_url
 
         category_id = item_data.pop("category_id", None)
-        category_name = await find_category_by_id(category_id)
-        print("Category name:", category_name)
+        # category_name = await find_category_by_id(category_id)
+        # print("Category name:", category_name)
 
-        if category_name is None or category_name == "":
-            return {"message": "Invalid category ID"}, status.HTTP_400_BAD_REQUEST
+        # if category_name is None or category_name == "":
+        #     return {"message": "Invalid category ID"}, status.HTTP_400_BAD_REQUEST
 
         # Check if item with same name and company already exists - # TODO: improve this logic
         existing_item = await db.items.find_one(
@@ -69,7 +78,7 @@ async def add_item(item_data, image):
 
         item_data['category'] = {
             "category_id": ObjectId(category_id),
-            "category_name": category_name
+            # "category_name": category_name
         }
 
         print("Final item data to be inserted:", item_data)
