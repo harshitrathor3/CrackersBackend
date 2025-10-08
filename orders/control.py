@@ -50,6 +50,11 @@ async def place_order(order_data):
         customer_last_name = order_data.get("customer", {}).get("last_name", "")
         customer_mobile = order_data.get("customer", {}).get("mobile", "")
 
+        # remove orders with 0 qty
+        order_data["items"] = {item_id: {size_id: qty for size_id, qty in size_info.items() if qty > 0} for item_id, size_info in order_data.get("items", {}).items() if any(qty > 0 for qty in size_info.values())}
+        print("Order data after removing 0 qty items:", order_data)
+        # input("check order data after removing 0 qty items?")
+
         items = order_data.get("items", {}).items()
 
         items_data = {str(item["_id"]): item async for item in db.items.find({"_id": {"$in": [ObjectId(item_id) for item_id, _ in items]}})}
