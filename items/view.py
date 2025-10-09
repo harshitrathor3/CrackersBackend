@@ -9,7 +9,8 @@ from items.control import (
     get_all_categories, 
     add_category,
     get_all_item_category_wise, 
-    update_item_details
+    update_item_details,
+    delete_item,
 )
 
 
@@ -158,4 +159,17 @@ async def update_item_details_route(update_item_data: ItemUpdate):
         )
 
 
+@item_router.delete("/delete_item/{item_id}")
+async def delete_item_route(item_id: str):
+    try:
+        response, status_code = await delete_item(item_id)
+        return JSONResponse(content=response, status_code=status_code)
+
+    except Exception as e:
+        print("Error occurred while deleting item:", e)
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal Server Error"}
+        )
 
