@@ -175,3 +175,47 @@ async def get_all_item_category_wise():
         traceback.print_exc()
         return {"message": "Internal Server Error","items": res}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
+
+async def update_item_details(item_id, update_data):
+    try:
+        if not ObjectId.is_valid(item_id):
+            return {"message": "Invalid item_id"}, status.HTTP_400_BAD_REQUEST
+
+        existing_item = await db.items.find_one({"_id": ObjectId(item_id)})
+        if not existing_item:
+            return {"message": "Item not found"}, status.HTTP_404_NOT_FOUND
+
+        if "category_id" in update_data:
+            category_id = update_data.pop("category_id")
+            category = await find_category_by_id(category_id)
+            if not category:
+                return {"message": "Category not found"}, status.HTTP_404_NOT_FOUND
+            update_data["category"] = {"category_id": ObjectId(category_id)}
+
+        if "size_info" in update_data:
+            size_info = update_data["size_info"]
+            for size_id, size_data in size_info.items():
+                mrp = size_data.get("mrp", 0)
+                price = size_data.get("price", 0)
+                if mrp > 0:
+                    discount = round(((mrp - price) / mrp) * 100, 2)
+                else:
+                    discount = 0.0
+                size_data['discount'] = discount
+                size_info[size_id] = size_data
+            update_data["size_info"] = size_info
+
+        update_result = await db.items.update_one(
+            {"_id": ObjectId(item_id)},
+            {"$set": update_data}
+        )
+        if update_result.modified_count == 1:
+            return {"message": "Item updated successfully"}, status.HTTP_200_OK
+        else:
+            return {"message": "No changes made to the item"}, status.HTTP_200_OK
+
+    except Exception as e:
+        print("Error in update_item_details:", e)
+        traceback.print_exc()
+        return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
+

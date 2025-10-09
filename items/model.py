@@ -26,3 +26,8 @@ class Item(BaseModel):
 class Category(BaseModel):
     name: str
     description: str
+
+class ItemUpdate(BaseModel):
+    item_id: str
+    item_data: Item
+
