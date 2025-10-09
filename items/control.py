@@ -219,3 +219,24 @@ async def update_item_details(item_id, update_data):
         traceback.print_exc()
         return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
+
+async def delete_item(item_id):
+    try:
+        if not ObjectId.is_valid(item_id):
+            return {"message": "Invalid item_id"}, status.HTTP_400_BAD_REQUEST
+
+        existing_item = await db.items.find_one({"_id": ObjectId(item_id)})
+        if not existing_item:
+            return {"message": "Item not found"}, status.HTTP_404_NOT_FOUND
+
+        delete_result = await db.items.delete_one({"_id": ObjectId(item_id)})
+        if delete_result.deleted_count == 1:
+            return {"message": "Item deleted successfully"}, status.HTTP_200_OK
+        else:
+            return {"message": "Failed to delete item"}, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        print("Error in delete_item:", e)
+        traceback.print_exc()
+        return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
+
