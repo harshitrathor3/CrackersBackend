@@ -240,3 +240,39 @@ async def delete_item(item_id):
         traceback.print_exc()
         return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
+
+async def search_items(query):
+    try:
+        if not query:
+            return {"items": []}, status.HTTP_200_OK
+
+        query = query.lower()
+        res = []
+        async for item in db.items.find(
+            {
+                "$or": [
+                    {"name": {"$regex": query, "$options": "i"}},
+                    {"company": {"$regex": query, "$options": "i"}},
+                    {"description": {"$regex": query, "$options": "i"}},
+                ]
+            }
+        ):
+            new_item_dict = {
+                "_id": str(item.get("_id", None)),
+                "name": item.get("name", None),
+                "company": item.get("company", None),
+                "description": item.get("description", None),
+                "size_info": item.get("size_info", None),
+                "category": dict(item.get("category", {})),
+                "image_url": item.get("image_url", None),
+            }
+            new_item_dict["category"]["category_id"] = str(new_item_dict["category"].get("category_id", None))
+            res.append(new_item_dict)
+
+        return {"items": res}, status.HTTP_200_OK
+
+    except Exception as e:
+        print("Error in search_items:", e)
+        traceback.print_exc()
+        return {"message": "Internal Server Error","items": []}, status.HTTP_500_INTERNAL_SERVER_ERROR
+
