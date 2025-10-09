@@ -1,10 +1,16 @@
 import json
 import traceback
-from items.model import Item, Category
 from utility.image_utils import ImageUtils
 from fastapi.responses import JSONResponse
+from items.model import Item, Category, ItemUpdate
 from fastapi import APIRouter, Form, File, UploadFile, status
-from items.control import add_item, get_all_items, get_all_categories, add_category, get_all_item_category_wise
+from items.control import (
+    add_item, get_all_items,
+    get_all_categories, 
+    add_category,
+    get_all_item_category_wise, 
+    update_item_details
+)
 
 
 
@@ -131,4 +137,25 @@ async def get_all_items_category_wise_route():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"message": "Internal Server Error", "items": []}
         )
+
+
+@item_router.post("/update_item_details")
+async def update_item_details_route(update_item_data: ItemUpdate):
+    try:
+        item_id = update_item_data.item_id
+        item_data = update_item_data.item_data.model_dump()
+        print("Received item data for update:", item_id, item_data)
+
+        response, status_code = await update_item_details(item_id, item_data)
+        return JSONResponse(content=response, status_code=status_code)
+
+    except Exception as e:
+        print("Error occurred while updating item details:", e)
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal Server Error"}
+        )
+
+
 
