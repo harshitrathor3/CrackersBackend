@@ -1,6 +1,7 @@
 import pytz
 import traceback
 from db import db
+from urllib import parse
 from bson import ObjectId
 from fastapi import status
 from datetime import datetime
@@ -180,8 +181,8 @@ async def confirm_order(order_id):
         print("Items with qty to deduct stock:", items_with_qty)
 
         # check order status
-        if order.get("status") != "placed":
-            return {"message": "Order is not in 'placed' status"}, status.HTTP_400_BAD_REQUEST
+        if order.get("status") not in ["placed", "confirmed"]:
+            return {"message": "Order is not in 'placed' or 'confirmed' status"}, status.HTTP_400_BAD_REQUEST
 
         # deduct stock from inventory
         await deduct_stock_for_order(items_with_qty)
@@ -194,10 +195,25 @@ async def confirm_order(order_id):
             {"$set": {"status": "confirmed"}}
         )
 
+        whatsapp_msg = f"""
+Thank you very much for ordering from Crackers Store 🎉🎉🎉!
+We are delighted to serve you.
+Here is your order id for later references: {order_id}.
+Visit again!🙏🙏🙏
+Happy Diwali!🪔🪔🪔
+"""
+        encoded_msg = parse.quote(whatsapp_msg)
+
         if result.modified_count == 1:
-            return {"message": "Order confirmed successfully"}, status.HTTP_200_OK
+            return {
+                "message": "Order confirmed successfully",
+                "whatsapp_msg_link": f"https://wa.me/91{order.get('mobile', '9926546160')}?text={encoded_msg}"
+            }, status.HTTP_200_OK
         else:
-            return {"message": "Order status was already 'confirmed'"}, status.HTTP_200_OK
+            return {
+                "message": "Order status was already 'confirmed'",
+                "whatsapp_msg_link": f"https://wa.me/91{order.get('mobile', '9926546160')}?text={encoded_msg}"
+            }, status.HTTP_200_OK
 
     except Exception as e:
         print("Error occurred while confirming order:", e)
