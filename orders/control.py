@@ -181,7 +181,7 @@ async def confirm_order(order_id):
         print("Items with qty to deduct stock:", items_with_qty)
 
         # check order status
-        if order.get("status") != "placed":
+        if order.get("status") not in ["placed", "confirmed"]:
             return {"message": "Order is not in 'placed' status"}, status.HTTP_400_BAD_REQUEST
 
         # deduct stock from inventory
