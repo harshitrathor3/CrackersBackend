@@ -32,6 +32,7 @@ class OrderItem(BaseModel):
     )
     items: Dict[str, Dict[str, int]]  # key is item_id
     total_amt: float
+    total_discount: float
     status: str = "pending"
     # discount: float TODO think about it in future
 
