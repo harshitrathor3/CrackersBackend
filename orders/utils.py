@@ -184,18 +184,19 @@ async def create_email_content(customer_name, order_id, items_with_qty, order_da
                 size = size_data.get("size", "")
                 pieces = size_data.get("pieces", 0)
                 price = size_data.get("price", 0)
+                mrp = size_data.get("mrp", 0)
                 discount = size_data.get("discount", 0)
                 subtotal = price * qty
 
-                discount = round(discount * size_data.get("mrp", 0) * qty / 100, 2)
+                discount = round(discount * mrp * qty / 100, 2)
 
                 items_html += f"""
 <tr>
     <td style="padding: 8px; border-bottom: 1px solid #eee;">{item_name} ({company}) - {size}</td>
     <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">{qty}</td>
-    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">₹{price * qty}</td>
-    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">₹{subtotal}</td>
+    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">₹{mrp * qty}</td>
     <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">₹{discount}</td>
+    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">₹{subtotal}</td>
 </tr>
 """
 
@@ -236,8 +237,8 @@ async def create_email_content(customer_name, order_id, items_with_qty, order_da
                         <th style="padding: 10px; text-align: left;">Item</th>
                         <th style="padding: 10px; text-align: center;">Qty</th>
                         <th style="padding: 10px; text-align: center;">Total Cost</th>
-                        <th style="padding: 10px; text-align: right;">Amount after Discount</th>
                         <th style="padding: 10px; text-align: right;">Discount</th>
+                        <th style="padding: 10px; text-align: right;">Price</th>
                     </tr>
                 </thead>
                 <tbody>
