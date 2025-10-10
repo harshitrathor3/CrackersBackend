@@ -50,7 +50,8 @@ async def place_order(order_data):
 
         customer_first_name = order_data.get("customer", {}).get("first_name", "")
         customer_last_name = order_data.get("customer", {}).get("last_name", "")
-        customer_mobile = order_data.get("customer", {}).get("mobile", "")
+        customer_mobile = order_data.get("customer", {}).get("mobile", None)
+        customer_email = order_data.get("customer", {}).get("email", None)
 
         # remove orders with 0 qty
         order_data["items"] = {item_id: {size_id: qty for size_id, qty in size_info.items() if qty > 0} for item_id, size_info in order_data.get("items", {}).items() if any(qty > 0 for qty in size_info.values())}
@@ -80,6 +81,7 @@ async def place_order(order_data):
             first_name=customer_first_name,
             last_name=customer_last_name,
             mobile=customer_mobile,
+            email=customer_email,
             items=order_data.get("items", {}),
             total_amt=total_order_amt,
             total_discount=total_discount_amt,

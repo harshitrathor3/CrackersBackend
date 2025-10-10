@@ -295,6 +295,7 @@ async def send_order_confirmation_email(order_details):
         # email_content = "<h1>Order Confirmation</h1>"
 
         # Send email via Brevo
+        # TODO add few emails in CC
         async with httpx.AsyncClient(timeout=60) as client:
             response = await client.post(
                 BREVO_URL,
