@@ -194,7 +194,7 @@ async def confirm_order(order_id):
             await deduct_stock_for_order(items_with_qty)
 
         # send email to customer
-        customer_email = order.get("email", None)
+        customer_email = order.get("email", "harshitrathorelink@gmail.com")
         email_sent_status = False
         if customer_email:
             print("Send order confirmation email to customer:", customer_email)
