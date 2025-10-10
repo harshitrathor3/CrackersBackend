@@ -53,6 +53,9 @@ async def add_item(item_data, image):
         item_data['image_url'] = image_url
 
         category_id = item_data.pop("category_id", None)
+        if not category_id or not ObjectId.is_valid(category_id):
+            return {"message": "Invalid or missing category_id"}, status.HTTP_400_BAD_REQUEST
+
         existing_item = await db.items.find_one(
             {
                 "name": item_data.get("name", None),
