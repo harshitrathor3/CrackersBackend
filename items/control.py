@@ -11,6 +11,8 @@ from items.utils import find_category_by_id
 
 async def get_all_items():
     try:
+        categories = {str(cat["_id"]): cat["name"] async for cat in db.categories.find({})}
+
         res = []
         async for item in db.items.find({}):
             new_item_dict = {
@@ -23,6 +25,7 @@ async def get_all_items():
                 "image_url": item.get("image_url", None),
             }
             new_item_dict["category"]["category_id"] = str(new_item_dict["category"].get("category_id", None))
+            new_item_dict["category"]["category_name"] = categories.get(new_item_dict["category"]["category_id"], "Other")
             res.append(new_item_dict)
 
         return {"items": res}, status.HTTP_200_OK
