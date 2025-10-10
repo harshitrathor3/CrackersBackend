@@ -6,7 +6,7 @@ from bson import ObjectId
 from fastapi import status
 from datetime import datetime
 from orders.model import OrderItem
-from orders.utils import validate_ids_and_qty, get_category_wise_items, deduct_stock_for_order
+from orders.utils import validate_ids_and_qty, get_category_wise_items, deduct_stock_for_order, send_order_confirmation_email
 
 
 
@@ -63,15 +63,17 @@ async def place_order(order_data):
         # print("Items data fetched for order placement:", items_data)
 
         total_order_amt = 0
+        total_discount_amt = 0
         for item_id, item_info in items:
             # validate size_ids and available quantity
-            is_valid, message, total_amt = await validate_ids_and_qty(item_id, item_info, items_data)
+            is_valid, message, total_amt, total_discount = await validate_ids_and_qty(item_id, item_info, items_data)
             if not is_valid:
                 return {"message": message}, status.HTTP_400_BAD_REQUEST
             else:
                 print(f"Item {item_id} passed validation: {message}")
 
             total_order_amt += total_amt
+            total_discount_amt += total_discount
 
         # insert order into collection
         order_item = OrderItem(
@@ -80,6 +82,7 @@ async def place_order(order_data):
             mobile=customer_mobile,
             items=order_data.get("items", {}),
             total_amt=total_order_amt,
+            total_discount=total_discount_amt,
             status="placed"
         )
         order_item = order_item.model_dump()
@@ -180,19 +183,36 @@ async def confirm_order(order_id):
         items_with_qty = order.get("items", {}).items()
         print("Items with qty to deduct stock:", items_with_qty)
 
+        order_status = order.get("status", "")
+
         # check order status
-        if order.get("status") not in ["placed", "confirmed"]:
+        if order_status not in ["placed", "confirmed"]:
             return {"message": "Order is not in 'placed' or 'confirmed' status"}, status.HTTP_400_BAD_REQUEST
 
-        # deduct stock from inventory
-        await deduct_stock_for_order(items_with_qty)
+        if order_status == "placed":
+            # deduct stock from inventory
+            await deduct_stock_for_order(items_with_qty)
 
-        # input("check item deducted?")
+        # send email to customer
+        customer_email = order.get("email", None)
+        email_sent_status = False
+        if customer_email:
+            print("Send order confirmation email to customer:", customer_email)
+            res, status_code = await send_order_confirmation_email(order)
+
+            if status_code == status.HTTP_200_OK:
+                print("Order confirmation email sent successfully to", customer_email)
+                email_sent_status = True
 
         # Update order status to 'confirmed'
         result = await db.orders.update_one(
             {"_id": order_obj_id},
-            {"$set": {"status": "confirmed"}}
+            {
+                "$set": {
+                    "status": "confirmed",
+                    "email_sent": email_sent_status,
+                }
+            }
         )
 
         whatsapp_msg = f"""
@@ -207,12 +227,14 @@ Happy Diwali!🪔🪔🪔
         if result.modified_count == 1:
             return {
                 "message": "Order confirmed successfully",
-                "whatsapp_msg_link": f"https://wa.me/91{order.get('mobile', '9926546160')}?text={encoded_msg}"
+                "whatsapp_msg_link": f"https://wa.me/91{order.get('mobile', '9926546160')}?text={encoded_msg}",
+                "email_sent": email_sent_status,
             }, status.HTTP_200_OK
         else:
             return {
                 "message": "Order status was already 'confirmed'",
-                "whatsapp_msg_link": f"https://wa.me/91{order.get('mobile', '9926546160')}?text={encoded_msg}"
+                "whatsapp_msg_link": f"https://wa.me/91{order.get('mobile', '9926546160')}?text={encoded_msg}",
+                "email_sent": email_sent_status,
             }, status.HTTP_200_OK
 
     except Exception as e:

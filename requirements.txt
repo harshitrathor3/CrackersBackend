@@ -15,3 +15,4 @@ prometheus-fastapi-instrumentator
 # Misclaneous
 pytz
 cloudinary
+httpx
