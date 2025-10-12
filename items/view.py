@@ -12,6 +12,7 @@ from items.control import (
     update_item_details,
     delete_item,
     search_items,
+    get_item_by_category_id,
 )
 
 
@@ -189,4 +190,20 @@ async def search_items_route(query: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"message": "Internal Server Error", "items": []}
         )
+
+
+@item_router.get("/get_item_by_category_id")
+async def get_item_by_category_id_route(category_id: str):
+    try:
+        response, status_code = await get_item_by_category_id(category_id)
+        return JSONResponse(content=response, status_code=status_code)
+
+    except Exception as e:
+        print("Error occurred while fetching items by category_id:", e)
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal Server Error", "items": []}
+        )
+
 
