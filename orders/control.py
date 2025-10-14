@@ -12,30 +12,45 @@ from orders.utils import validate_ids_and_qty, get_category_wise_items, deduct_s
 
 
 async def get_orders():
-    # TODO - short orders with descending/ascending order date
     try:
-        orders = []
-        async for order in db.orders.find({}):
+        orders = {"placed": [], "confirmed": [],}
+        placed_cnt = 0
+        confirmed_cnt = 0
+        others_cnt = 0
+
+        async for order in db.orders.find({}).sort("order_date", -1):
             order_date = order.get("order_date", None)
             if order_date:
                 ist = pytz.timezone('Asia/Kolkata')
                 order_date = order_date.replace(tzinfo=pytz.UTC).astimezone(ist)
-            orders.append(
+
+            order_status = order.get("status", "placed")
+            orders[order_status].append(
                 {
                     "order_id": str(order["_id"]),
                     "first_name": order.get("first_name", ""),
                     "last_name": order.get("last_name", ""),
                     "mobile": order.get("mobile", ""),
                     "total_amt": order.get("total_amt", 0),
-                    "status": order.get("status", ""),
+                    "status": order_status,
                     "order_date": order_date.isoformat() if order_date else None,
                 }
             )
+            if order_status == "placed":
+                placed_cnt += 1
+            elif order_status == "confirmed":
+                confirmed_cnt += 1
+            else:
+                others_cnt += 1
 
         return {
             "total_orders": len(orders),
             "orders": orders,
+            "placed_count": placed_cnt,
+            "confirmed_count": confirmed_cnt,
+            "others_count": others_cnt,
         }, status.HTTP_200_OK
+
     except Exception as e:
         print("Error occurred while fetching orders:", e)
         traceback.print_exc()

@@ -1,15 +1,17 @@
 import uvicorn
 from fastapi import FastAPI
+from api_analytics.fastapi import Analytics
 from fastapi.middleware.cors import CORSMiddleware
-from prometheus_fastapi_instrumentator import Instrumentator
+# from prometheus_fastapi_instrumentator import Instrumentator
 
+from config import ANALYTICS_API
 from items.view import item_router
 from orders.view import orders_router
 
 
 
 app = FastAPI(title="Crackers Backend")
-Instrumentator().instrument(app).expose(app)
+# Instrumentator().instrument(app).expose(app)
 
 origins = [
     "http://localhost",
@@ -26,6 +28,8 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
+app.add_middleware(Analytics, api_key=ANALYTICS_API)
+
 
 app.include_router(item_router)
 app.include_router(orders_router)
