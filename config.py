@@ -25,3 +25,5 @@ SENDER_NAME = "Harshit Rathore"
 SUBJECT = "Your order is successfully placed!"
 
 
+# Analytics
+ANALYTICS_API = os.getenv("ANALYTICS_API")

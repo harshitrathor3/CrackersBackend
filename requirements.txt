@@ -11,6 +11,7 @@ motor
 
 # Visualize API call metrics
 prometheus-fastapi-instrumentator
+fastapi-analytics
 
 # Misclaneous
 pytz
