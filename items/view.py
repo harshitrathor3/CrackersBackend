@@ -14,6 +14,7 @@ from items.control import (
     search_items,
     get_item_by_category_id,
     get_item_by_id,
+    upload_item_image
 )
 
 
@@ -229,4 +230,24 @@ async def get_item_by_id_route(item_id: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"message": "Internal Server Error", "items": []}
         )
+
+
+
+@item_router.post("/upload_item_image")
+async def upload_item_image_route(
+    item_name: str = Form(...), 
+    image: UploadFile = File(...)
+):
+    try:
+        response, status_code = await upload_item_image(item_name, image)
+        return JSONResponse(content=response, status_code=status_code)
+
+    except Exception as e:
+        print("Error occurred while uploading item image:", e)
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal Server Error"}
+        )
+
 
