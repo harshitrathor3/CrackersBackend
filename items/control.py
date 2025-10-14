@@ -346,3 +346,31 @@ async def get_item_by_category_id(category_id):
         return {"message": "Internal Server Error","items": []}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
+async def get_item_by_id(item_id):
+    try:
+        if not ObjectId.is_valid(item_id):
+            return {"message": "Invalid item_id"}, status.HTTP_400_BAD_REQUEST
+
+        item = await db.items.find_one({"_id": ObjectId(item_id)})
+        if not item:
+            return {"message": "Item not found"}, status.HTTP_404_NOT_FOUND
+
+        new_item_dict = {
+            "_id": str(item.get("_id", None)),
+            "name": item.get("name", None),
+            "company": item.get("company", None),
+            "description": item.get("description", None),
+            "size_info": item.get("size_info", None),
+            "category": dict(item.get("category", {})),
+            "image_url": item.get("image_url", None),
+        }
+        new_item_dict["category"]["category_id"] = str(new_item_dict["category"].get("category_id", None))
+
+        return {"item": new_item_dict}, status.HTTP_200_OK
+
+    except Exception as e:
+        print("Error in get_item_by_id:", e)
+        traceback.print_exc()
+        return {"message": "Internal Server Error","item": {}}, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
