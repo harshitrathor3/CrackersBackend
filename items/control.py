@@ -180,13 +180,15 @@ async def get_all_item_category_wise():
             new_item_dict["category"]["category_id"] = category_id
             res[category_name].append(new_item_dict)
             item_cnt += 1
+        
+        category_cnt = len(res)
 
-        return {"items": res, "item_count": item_cnt}, status.HTTP_200_OK
+        return {"category_count": category_cnt, "item_count": item_cnt, "items": res,}, status.HTTP_200_OK
 
     except Exception as e:
         print("Error in get_all_items:", e)
         traceback.print_exc()
-        return {"message": "Internal Server Error","items": res}, status.HTTP_500_INTERNAL_SERVER_ERROR
+        return {"message": "Internal Server Error", "items": res}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 async def update_item_details(item_id, update_data):
@@ -297,6 +299,10 @@ async def get_item_by_category_id(category_id):
     try:
         if not ObjectId.is_valid(category_id):
             return {"message": "Invalid category_id"}, status.HTTP_400_BAD_REQUEST
+        
+        category_name = await find_category_by_id(category_id)
+        if not category_name:
+            return {"message": "Category not found"}, status.HTTP_404_NOT_FOUND
 
         res = []
         item_cnt = 0
@@ -314,7 +320,7 @@ async def get_item_by_category_id(category_id):
             res.append(new_item_dict)
             item_cnt += 1
 
-        return {"items": res, "item_count": item_cnt}, status.HTTP_200_OK
+        return {"category_name": category_name, "item_count": item_cnt, "items": res,}, status.HTTP_200_OK
 
     except Exception as e:
         print("Error in get_item_by_category_id:", e)
