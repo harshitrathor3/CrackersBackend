@@ -92,12 +92,20 @@ async def get_all_categories_route():
 
 
 @item_router.post("/add_category")
-async def add_category_route(category_data: Category):
+async def add_category_route(
+    name: str = Form(...),
+    description: str = Form(...),
+    image: UploadFile = File(...)
+):
     try:
-        category_data = category_data.model_dump()
+        category_data = {
+            "name": name,
+            "description": description,
+        }
+        category_data = Category(**category_data).model_dump()
         print("Received category data:", category_data)
 
-        response, status_code = await add_category(category_data)
+        response, status_code = await add_category(category_data, image)
         return JSONResponse(content=response, status_code=status_code)
 
     except Exception as e:
