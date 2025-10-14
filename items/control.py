@@ -374,3 +374,32 @@ async def get_item_by_id(item_id):
         return {"message": "Internal Server Error","item": {}}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
+async def upload_item_image(item_name, image):
+    try:
+        if not item_name:
+            return {"message": "Invalid item name"}, status.HTTP_400_BAD_REQUEST
+
+        # Upload image to cloudinary
+        image_utils = ImageUtils(image)
+        image_utils.save_image_locally()
+
+        image_unique_name = f"{item_name}_{uuid.uuid4().hex[:8]}"
+        print("Generated image unique name:", image_unique_name)
+        response, status_code = image_utils.upload_image(public_id=image_unique_name)
+        print("Image upload response:", response)
+
+        image_url = None
+        if status_code == status.HTTP_201_CREATED:
+            image_url = response.get("secure_url", None)
+            return {"image_url": image_url}, status.HTTP_201_CREATED
+        else:
+            return {"message": "Image upload failed"}, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    except Exception as e:
+        print("Error in upload_item_image:", e)
+        traceback.print_exc()
+        return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
+    finally:
+        print("Cleaning up local image file...")
+        image_utils.delete_local_saved_image()
+
