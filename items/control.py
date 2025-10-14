@@ -115,11 +115,12 @@ async def get_all_categories():
                     "_id": str(category.get("_id", None)),
                     "name": category.get("name", None),
                     "created_at": created_at.isoformat() if created_at else None,
-                    "description": category.get("description", None)
+                    "description": category.get("description", None),
+                    "image_url": category.get("image_url", None),
                 }
             )
             category_cnt += 1
-        
+
         print(res)
         return {"categories": res, "category_count": category_cnt}, status.HTTP_200_OK
     except Exception as e:
@@ -128,8 +129,22 @@ async def get_all_categories():
         return {"message": "Internal Server Error","categories": []}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
-async def add_category(category_data):
+async def add_category(category_data, image):
     try:
+        # Upload image to cloudinary
+        image_utils = ImageUtils(image)
+        image_utils.save_image_locally()
+
+        image_unique_name = f"{category_data.get('name', 'category')}_{uuid.uuid4().hex[:8]}"
+        print("Generated image unique name:", image_unique_name)
+        response, status_code = image_utils.upload_image(public_id=image_unique_name)
+        print("Image upload response:", response)
+
+        image_url = None
+        if status_code == status.HTTP_201_CREATED:
+            image_url = response.get("secure_url", None)
+        category_data['image_url'] = image_url
+
         # Check if category with same name already exists
         existing_category = await db.categories.find_one(
             {
@@ -139,11 +154,11 @@ async def add_category(category_data):
         if existing_category:
             return {"message": "Category with same name already exists"}, status.HTTP_400_BAD_REQUEST
 
-        # Insert new category
         # Add created_at timestamp in IST
         ist = pytz.timezone('Asia/Kolkata')
         category_data['created_at'] = datetime.now(ist)
-        
+
+        # Insert new category
         await db.categories.insert_one(category_data)
         return {"message": "Category added successfully"}, status.HTTP_201_CREATED
 
@@ -151,6 +166,9 @@ async def add_category(category_data):
         print("Error in add_category:", e)
         traceback.print_exc()
         return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
+    finally:
+        print("Cleaning up local image file...")
+        image_utils.delete_local_saved_image()
 
 
 
