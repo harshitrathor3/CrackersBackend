@@ -285,15 +285,18 @@ async def create_email_content(customer_name, order_id, items_with_qty, order_da
             <h1>🎉 Order Confirmed!</h1>
         </div>
         <div class="content">
-            <p>Dear {customer_name},</p>
-            <p>Thank you for your order! We're excited to confirm that your order has been successfully placed.</p>
-            
+            <p>प्रिय {customer_name},</p>
+
+            <p>✨ <strong>जोशी फटाका</strong> से खरीदारी करने के लिए धन्यवाद! 🎆  
+            हमें यह बताते हुए खुशी हो रही है कि आपका ऑर्डर सफलतापूर्वक तैयार कर दिया गया है और आपको सौंप दिया गया है।</p>
+
             <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #4CAF50; margin: 20px 0;">
-                <p style="margin: 5px 0;"><strong>Order ID:</strong> {order_id}</p>
-                <p style="margin: 5px 0;"><strong>Order Date:</strong> {order_date}</p>
+                <p style="margin: 5px 0;"><strong>Order Id:</strong> {order_id}</p>
+                <p style="margin: 5px 0;"><strong>Order date:</strong> {order_date.strftime("%d-%m-%Y")}</p>
+                <p style="margin: 5px 0;"><strong>Order time:</strong> {order_date.strftime("%I:%M %p")}</p>
             </div>
-            
-            <h3 style="color: #4CAF50;">📦 Order Details:</h3>
+
+            <h3 style="color: #4CAF50;">🧨 Your Order Summary:</h3>
             <div style="overflow-x:auto;">
                 <table>
                     <thead>
@@ -310,7 +313,7 @@ async def create_email_content(customer_name, order_id, items_with_qty, order_da
                     </tbody>
                 </table>
             </div>
-            
+
             <div style="margin-top: 20px;">
                 <table style="width: 100%; border-collapse: collapse; background-color: #f9f9f9; border-radius: 8px; padding: 10px;">
                     <tr style="border-top: 2px solid #ddd;">
@@ -324,11 +327,12 @@ async def create_email_content(customer_name, order_id, items_with_qty, order_da
                 </table>
             </div>
 
-            <p style="margin-top: 20px;">We'll notify you once your order is ready for delivery or pickup.</p>
-            <p>If you have any questions, feel free to contact us.</p>
+            <p style="margin-top: 20px;">हमें आशा है कि आपको हमारी सेवा पसंद आई होगी! अगली बार भी <strong>जोशी फटाका</strong> पर ऑर्डर करें और पाएं शानदार छूट और तेज़ सेवा 🔥</p>
+            <br>
+            <p>आपको और आपके परिवार को दीपावली की हार्दिक शुभकामनाएँ! आपका जीवन रोशनी, खुशियों और उत्सवों से भर जाए 🎇</p>
         </div>
         <div class="footer">
-            <p>Thank you for shopping with us! 🎆</p>
+            <p>स्नेह सहित,<br><strong>टीम जोशी फटाका 💥</strong></p>
             <p>This is an automated email. Please do not reply to this message.</p>
         </div>
     </div>
