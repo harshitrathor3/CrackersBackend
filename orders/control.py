@@ -44,7 +44,7 @@ async def get_orders():
                 others_cnt += 1
 
         return {
-            "total_orders": len(orders),
+            "total_orders": placed_cnt + confirmed_cnt + others_cnt,
             "orders": orders,
             "placed_count": placed_cnt,
             "confirmed_count": confirmed_cnt,

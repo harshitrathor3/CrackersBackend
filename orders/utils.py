@@ -192,7 +192,7 @@ async def create_email_content(customer_name, order_id, items_with_qty, order_da
 
                 items_html += f"""
 <tr>
-    <td style="padding: 8px; border-bottom: 1px solid #eee;">{item_name} ({company}) - {size}</td>
+    <td style="padding: 8px; border-bottom: 1px solid #eee;">{item_name} - {size}</td>
     <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">{qty}</td>
     <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">₹{mrp * qty}</td>
     <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">₹{discount}</td>
@@ -206,14 +206,77 @@ async def create_email_content(customer_name, order_id, items_with_qty, order_da
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }}
-        .content {{ background-color: #ffffff; padding: 20px; border: 1px solid #ddd; }}
-        .footer {{ background-color: #f1f1f1; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 5px 5px; }}
-        table {{ width: 100%; border-collapse: collapse; margin: 15px 0; }}
-        .total {{ font-size: 18px; font-weight: bold; color: #4CAF50; }}
+        body {{ 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0; 
+            padding: 0;
+        }}
+        .container {{
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }}
+        .header {{
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }}
+        .content {{
+            padding: 20px;
+        }}
+        .footer {{
+            background-color: #f1f1f1;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }}
+        th, td {{
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }}
+        th {{
+            background-color: #4CAF50;
+            color: white;
+        }}
+        td {{
+            word-break: break-word;
+        }}
+        .total {{
+            font-size: 16px;
+            font-weight: bold;
+            color: #4CAF50;
+        }}
+        @media only screen and (max-width: 480px) {{
+            body, .container {{
+                width: 100% !important;
+                min-width: 100% !important;
+            }}
+            th, td {{
+                font-size: 12px !important;
+                padding: 6px !important;
+            }}
+            .total {{
+                font-size: 14px !important;
+            }}
+        }}
     </style>
 </head>
 <body>
@@ -231,27 +294,37 @@ async def create_email_content(customer_name, order_id, items_with_qty, order_da
             </div>
             
             <h3 style="color: #4CAF50;">📦 Order Details:</h3>
-            <table>
-                <thead>
-                    <tr style="background-color: #4CAF50; color: white;">
-                        <th style="padding: 10px; text-align: left;">Item</th>
-                        <th style="padding: 10px; text-align: center;">Qty</th>
-                        <th style="padding: 10px; text-align: center;">Total Cost</th>
-                        <th style="padding: 10px; text-align: right;">Discount</th>
-                        <th style="padding: 10px; text-align: right;">Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {items_html}
-                </tbody>
-            </table>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">Item</th>
+                            <th style="text-align:center;">Qty</th>
+                            <th style="text-align:center;">Total Cost</th>
+                            <th style="text-align:right;">Discount</th>
+                            <th style="text-align:right;">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {items_html}
+                    </tbody>
+                </table>
+            </div>
             
-            <div style="text-align: right; padding: 15px; background-color: #f9f9f9; margin-top: 10px;">
-                <p class="total">Total Amount: ₹{total_amount}</p>
-                <p class="total">Amount Saved: ₹{total_discount}</p>
+            <div style="margin-top: 20px;">
+                <table style="width: 100%; border-collapse: collapse; background-color: #f9f9f9; border-radius: 8px; padding: 10px;">
+                    <tr style="border-top: 2px solid #ddd;">
+                        <td style="padding: 10px; text-align: left; font-weight: bold; font-size: 16px; color: #333;">Total Amount:</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold; font-size: 16px; color: #4CAF50;">₹{total_amount}</td>
+                    </tr>
+                    <tr style="border-top: 2px solid #ddd;">
+                        <td style="padding: 10px; text-align: left; font-weight: bold; font-size: 16px; color: #333;">Amount Saved:</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold; font-size: 16px; color: #4CAF50;">₹{total_discount}</td>
+                    </tr>
+                </table>
             </div>
 
-            <p style="margin-top: 20px;">We'll notify you once your order is ready for delivery/pickup.</p>
+            <p style="margin-top: 20px;">We'll notify you once your order is ready for delivery or pickup.</p>
             <p>If you have any questions, feel free to contact us.</p>
         </div>
         <div class="footer">
