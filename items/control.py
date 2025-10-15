@@ -403,3 +403,57 @@ async def upload_item_image(item_name, image):
         print("Cleaning up local image file...")
         image_utils.delete_local_saved_image()
 
+
+async def update_category(category_id, category_data, image=None):
+    try:
+        if not ObjectId.is_valid(category_id):
+            return {"message": "Invalid category_id"}, status.HTTP_400_BAD_REQUEST
+
+        existing_category = await db.categories.find_one({"_id": ObjectId(category_id)})
+        if not existing_category:
+            return {"message": "Category not found"}, status.HTTP_404_NOT_FOUND
+        
+        # TODO Delete prev image
+        # prev_image_url = existing_category.get("image_url", None)
+        # if prev_image_url:
+        #     image_utils = ImageUtils()
+        #     image_utils.delete_image(public_id=prev_image_url)
+
+        if image:
+            # Upload new image to cloudinary
+            image_utils = ImageUtils(image)
+            image_utils.save_image_locally()
+
+            image_unique_name = f"{category_data.get('name', 'category')}_{uuid.uuid4().hex[:8]}"
+            print("Generated image unique name:", image_unique_name)
+            response, status_code = image_utils.upload_image(public_id=image_unique_name)
+            print("Image upload response:", response)
+
+            image_url = None
+            if status_code == status.HTTP_201_CREATED:
+                image_url = response.get("secure_url", None)
+                category_data['image_url'] = image_url
+
+            print("Cleaning up local image file...")
+            image_utils.delete_local_saved_image()
+
+        # Update the category
+        update_result = await db.categories.update_one(
+            {"_id": ObjectId(category_id)},
+            {"$set": category_data},
+        )
+
+        if update_result.modified_count == 1:
+            return {"message": "Category updated successfully"}, status.HTTP_200_OK
+        else:
+            return {"message": "No changes made to the category"}, status.HTTP_200_OK
+
+    except Exception as e:
+        print("Error in update_category:", e)
+        traceback.print_exc()
+        return {"message": "Internal Server Error"}, status.HTTP_500_INTERNAL_SERVER_ERROR
+    finally:
+        if image:
+            print("Cleaning up local image file...")
+            image_utils.delete_local_saved_image()
+

@@ -20,9 +20,13 @@ async def get_orders():
 
         async for order in db.orders.find({}).sort("order_date", -1):
             order_date = order.get("order_date", None)
+            order_confirmed_date = order.get("order_confirmed_date", None)
             if order_date:
                 ist = pytz.timezone('Asia/Kolkata')
                 order_date = order_date.replace(tzinfo=pytz.UTC).astimezone(ist)
+            if order_confirmed_date:
+                ist = pytz.timezone('Asia/Kolkata')
+                order_confirmed_date = order_confirmed_date.replace(tzinfo=pytz.UTC).astimezone(ist)
 
             order_status = order.get("status", "placed")
             orders[order_status].append(
@@ -34,6 +38,7 @@ async def get_orders():
                     "total_amt": order.get("total_amt", 0),
                     "status": order_status,
                     "order_date": order_date.isoformat() if order_date else None,
+                    "order_confirmed_date": order_confirmed_date.isoformat() if order_confirmed_date else "",
                 }
             )
             if order_status == "placed":
@@ -42,6 +47,8 @@ async def get_orders():
                 confirmed_cnt += 1
             else:
                 others_cnt += 1
+
+        orders["confirmed"].sort(key=lambda x: x.get("order_confirmed_date", ""), reverse=True)
 
         return {
             "total_orders": placed_cnt + confirmed_cnt + others_cnt,
@@ -228,6 +235,7 @@ async def confirm_order(order_id):
                 "$set": {
                     "status": "confirmed",
                     "email_sent": email_sent_status,
+                    "order_confirmed_date": datetime.now(pytz.timezone("Asia/Kolkata")),
                 }
             }
         )

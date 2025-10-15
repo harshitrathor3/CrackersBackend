@@ -14,7 +14,8 @@ from items.control import (
     search_items,
     get_item_by_category_id,
     get_item_by_id,
-    upload_item_image
+    upload_item_image,
+    update_category,
 )
 
 
@@ -250,4 +251,29 @@ async def upload_item_image_route(
             content={"message": "Internal Server Error"}
         )
 
+
+@item_router.post("/update_category")
+async def update_category_route(
+    category_id: str = Form(...),
+    name: str = Form(...),
+    description: str = Form(...),
+    image: UploadFile = File(None)
+):
+    try:
+        category_data = {
+            "name": name,
+            "description": description,
+        }
+        category_data = Category(**category_data).model_dump()
+        print("Received category data for update:", category_data)
+        response, status_code = await update_category(category_id, category_data, image)
+        return JSONResponse(content=response, status_code=status_code)
+
+    except Exception as e:
+        print("Error occurred while updating category:", e)
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Internal Server Error"}
+        )
 
