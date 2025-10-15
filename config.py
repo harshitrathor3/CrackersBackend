@@ -11,6 +11,7 @@ except Exception as e:
 
 # MongoDB
 MONGODB_CONNECTION_STRING = os.getenv("MONGODB_CONNECTION_STRING")
+DB_NAME = os.getenv("DB_NAME", "crackers_db")
 
 # Cloudinary
 CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME")
