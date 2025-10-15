@@ -228,6 +228,7 @@ async def confirm_order(order_id):
                 "$set": {
                     "status": "confirmed",
                     "email_sent": email_sent_status,
+                    "order_confirmed_date": datetime.now(pytz.timezone("Asia/Kolkata")),
                 }
             }
         )
