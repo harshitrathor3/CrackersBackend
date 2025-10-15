@@ -192,7 +192,7 @@ async def create_email_content(customer_name, order_id, items_with_qty, order_da
 
                 items_html += f"""
 <tr>
-    <td style="padding: 8px; border-bottom: 1px solid #eee;">{item_name} ({company}) - {size}</td>
+    <td style="padding: 8px; border-bottom: 1px solid #eee;">{item_name} - {size}</td>
     <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">{qty}</td>
     <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">₹{mrp * qty}</td>
     <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">₹{discount}</td>
@@ -206,14 +206,77 @@ async def create_email_content(customer_name, order_id, items_with_qty, order_da
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }}
-        .content {{ background-color: #ffffff; padding: 20px; border: 1px solid #ddd; }}
-        .footer {{ background-color: #f1f1f1; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 5px 5px; }}
-        table {{ width: 100%; border-collapse: collapse; margin: 15px 0; }}
-        .total {{ font-size: 18px; font-weight: bold; color: #4CAF50; }}
+        body {{ 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0; 
+            padding: 0;
+        }}
+        .container {{
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }}
+        .header {{
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }}
+        .content {{
+            padding: 20px;
+        }}
+        .footer {{
+            background-color: #f1f1f1;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }}
+        th, td {{
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }}
+        th {{
+            background-color: #4CAF50;
+            color: white;
+        }}
+        td {{
+            word-break: break-word;
+        }}
+        .total {{
+            font-size: 16px;
+            font-weight: bold;
+            color: #4CAF50;
+        }}
+        @media only screen and (max-width: 480px) {{
+            body, .container {{
+                width: 100% !important;
+                min-width: 100% !important;
+            }}
+            th, td {{
+                font-size: 12px !important;
+                padding: 6px !important;
+            }}
+            .total {{
+                font-size: 14px !important;
+            }}
+        }}
     </style>
 </head>
 <body>
@@ -222,40 +285,54 @@ async def create_email_content(customer_name, order_id, items_with_qty, order_da
             <h1>🎉 Order Confirmed!</h1>
         </div>
         <div class="content">
-            <p>Dear {customer_name},</p>
-            <p>Thank you for your order! We're excited to confirm that your order has been successfully placed.</p>
-            
+            <p>प्रिय {customer_name},</p>
+
+            <p>✨ <strong>जोशी फटाका</strong> से खरीदारी करने के लिए धन्यवाद! 🎆  
+            हमें यह बताते हुए खुशी हो रही है कि आपका ऑर्डर सफलतापूर्वक तैयार कर दिया गया है और आपको सौंप दिया गया है।</p>
+
             <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #4CAF50; margin: 20px 0;">
-                <p style="margin: 5px 0;"><strong>Order ID:</strong> {order_id}</p>
-                <p style="margin: 5px 0;"><strong>Order Date:</strong> {order_date}</p>
-            </div>
-            
-            <h3 style="color: #4CAF50;">📦 Order Details:</h3>
-            <table>
-                <thead>
-                    <tr style="background-color: #4CAF50; color: white;">
-                        <th style="padding: 10px; text-align: left;">Item</th>
-                        <th style="padding: 10px; text-align: center;">Qty</th>
-                        <th style="padding: 10px; text-align: center;">Total Cost</th>
-                        <th style="padding: 10px; text-align: right;">Discount</th>
-                        <th style="padding: 10px; text-align: right;">Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {items_html}
-                </tbody>
-            </table>
-            
-            <div style="text-align: right; padding: 15px; background-color: #f9f9f9; margin-top: 10px;">
-                <p class="total">Total Amount: ₹{total_amount}</p>
-                <p class="total">Amount Saved: ₹{total_discount}</p>
+                <p style="margin: 5px 0;"><strong>Order Id:</strong> {order_id}</p>
+                <p style="margin: 5px 0;"><strong>Order date:</strong> {order_date.strftime("%d-%m-%Y")}</p>
+                <p style="margin: 5px 0;"><strong>Order time:</strong> {order_date.strftime("%I:%M %p")}</p>
             </div>
 
-            <p style="margin-top: 20px;">We'll notify you once your order is ready for delivery/pickup.</p>
-            <p>If you have any questions, feel free to contact us.</p>
+            <h3 style="color: #4CAF50;">🧨 Your Order Summary:</h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">Item</th>
+                            <th style="text-align:center;">Qty</th>
+                            <th style="text-align:center;">Total Cost</th>
+                            <th style="text-align:right;">Discount</th>
+                            <th style="text-align:right;">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {items_html}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <table style="width: 100%; border-collapse: collapse; background-color: #f9f9f9; border-radius: 8px; padding: 10px;">
+                    <tr style="border-top: 2px solid #ddd;">
+                        <td style="padding: 10px; text-align: left; font-weight: bold; font-size: 16px; color: #333;">Total Amount:</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold; font-size: 16px; color: #4CAF50;">₹{total_amount}</td>
+                    </tr>
+                    <tr style="border-top: 2px solid #ddd;">
+                        <td style="padding: 10px; text-align: left; font-weight: bold; font-size: 16px; color: #333;">Amount Saved:</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold; font-size: 16px; color: #4CAF50;">₹{total_discount}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <p style="margin-top: 20px;">हमें आशा है कि आपको हमारी सेवा पसंद आई होगी! अगली बार भी <strong>जोशी फटाका</strong> पर ऑर्डर करें और पाएं शानदार छूट और तेज़ सेवा 🔥</p>
+            <br>
+            <p>आपको और आपके परिवार को दीपावली की हार्दिक शुभकामनाएँ! आपका जीवन रोशनी, खुशियों और उत्सवों से भर जाए 🎇</p>
         </div>
         <div class="footer">
-            <p>Thank you for shopping with us! 🎆</p>
+            <p>स्नेह सहित,<br><strong>टीम जोशी फटाका 💥</strong></p>
             <p>This is an automated email. Please do not reply to this message.</p>
         </div>
     </div>
