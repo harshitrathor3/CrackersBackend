@@ -241,11 +241,14 @@ async def confirm_order(order_id):
         )
 
         whatsapp_msg = f"""
-Thank you very much for ordering from Crackers Store 🎉🎉🎉!
-We are delighted to serve you.
-Here is your order id for later references: {order_id}.
-Visit again!🙏🙏🙏
-Happy Diwali!🪔🪔🪔
+🎉 नमस्ते! आपने Joshi Fataka से खरीदारी की है 🧨  
+आपका ऑर्डर सफलतापूर्वक कन्फर्म हो गया है।  
+
+🧾 आपका ऑर्डर ID: {order_id}  
+कृपया इसे भविष्य के संदर्भ के लिए संभाल कर रखें।  
+
+हमारे साथ खरीदारी करने के लिए धन्यवाद!  
+फिर मिलेंगे — शुभ दीपावली! 🪔🙏
 """
         encoded_msg = parse.quote(whatsapp_msg)
 

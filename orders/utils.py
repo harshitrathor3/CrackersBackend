@@ -375,18 +375,22 @@ async def send_order_confirmation_email(order_details):
         # TODO add few emails in CC
         async with httpx.AsyncClient(timeout=60) as client:
             response = await client.post(
-                BREVO_URL,
-                headers={
-                    "api-key": BREVO_API_KEY,
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
-                    "to": [{"email": customer_email, "name": customer_name}],
-                    "subject": SUBJECT,
-                    "htmlContent": email_content
-                }
-            )
+            BREVO_URL,
+            headers={
+                "api-key": BREVO_API_KEY,
+                "Content-Type": "application/json"
+            },
+            json={
+                "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
+                "to": [{"email": customer_email, "name": customer_name}],
+                "cc": [
+                    {"email": "harshitrathorelink@gmail.com"},
+                    {"email": "shobhitjoshi87@gmail.com"}
+                ],
+                "subject": SUBJECT,
+                "htmlContent": email_content
+            }
+        )
 
             if response.status_code == 201:
                 print(f"✅ Order confirmation email sent to {customer_email}")
