@@ -6,6 +6,7 @@ from bson import ObjectId
 from fastapi import status
 from datetime import datetime
 from orders.model import OrderItem
+from config import price_discount_values
 from orders.utils import validate_ids_and_qty, get_category_wise_items, deduct_stock_for_order, send_order_confirmation_email
 
 
@@ -97,6 +98,16 @@ async def place_order(order_data):
 
             total_order_amt += total_amt
             total_discount_amt += total_discount
+
+        # calculate final price after cart value discount
+        special_discount = 0
+        for price_threshold, discount_percent in sorted(price_discount_values.items(), reverse=True):
+            if total_order_amt >= price_threshold:
+                special_discount = (total_order_amt * discount_percent) / 100
+                total_order_amt -= special_discount
+                total_discount_amt += special_discount
+                print(f"Applied cart value discount: {discount_percent}% for amount {total_order_amt + special_discount}")
+                break
 
         # insert order into collection
         order_item = OrderItem(
@@ -241,11 +252,14 @@ async def confirm_order(order_id):
         )
 
         whatsapp_msg = f"""
-Thank you very much for ordering from Crackers Store 🎉🎉🎉!
-We are delighted to serve you.
-Here is your order id for later references: {order_id}.
-Visit again!🙏🙏🙏
-Happy Diwali!🪔🪔🪔
+🎉 नमस्ते! आपने Joshi Fataka से खरीदारी की है 🧨  
+आपका ऑर्डर सफलतापूर्वक कन्फर्म हो गया है।  
+
+🧾 आपका ऑर्डर ID: {order_id}  
+कृपया इसे भविष्य के संदर्भ के लिए संभाल कर रखें।  
+
+हमारे साथ खरीदारी करने के लिए धन्यवाद!  
+फिर मिलेंगे — शुभ दीपावली! 🪔🙏
 """
         encoded_msg = parse.quote(whatsapp_msg)
 

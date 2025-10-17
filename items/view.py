@@ -52,6 +52,8 @@ async def add_item_route(
     company: str = Form(...),
     description: str = Form(...),
     size_info: str = Form(...),
+    bulk_discount_qty: int = Form(None),
+    bulk_discount_percent: float = Form(None),
     image: UploadFile = File(...)
 ):
     try:
@@ -61,7 +63,9 @@ async def add_item_route(
             "category_id": category_id,
             "company": company,
             "description": description,
-            "size_info": dict(json.loads(size_info))
+            "size_info": dict(json.loads(size_info)),
+            "bulk_discount_qty": bulk_discount_qty,
+            "bulk_discount_percent": bulk_discount_percent,
         }
 
         item_data = Item(**item_data).model_dump()

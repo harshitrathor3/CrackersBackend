@@ -35,6 +35,16 @@ async def validate_ids_and_qty(item_id, item_info, items_data):
         total_amt = round(total_amt, 2)
         total_discount = round(total_discount, 2)
 
+        bulk_discount_qty = item_data.get("bulk_discount_qty", None)
+        bulk_discount_percent = item_data.get("bulk_discount_percent", None)
+        total_item_qty = sum(qty for qty in item_info.values())
+
+        if bulk_discount_qty is not None and bulk_discount_percent is not None:
+            if total_item_qty >= bulk_discount_qty:
+                extra_discount = (total_amt * bulk_discount_percent) / 100
+                total_amt -= extra_discount
+                total_discount += extra_discount
+
         return True, "All size_ids are valid and stock is sufficient", total_amt, total_discount
 
     except Exception as e:
@@ -375,18 +385,22 @@ async def send_order_confirmation_email(order_details):
         # TODO add few emails in CC
         async with httpx.AsyncClient(timeout=60) as client:
             response = await client.post(
-                BREVO_URL,
-                headers={
-                    "api-key": BREVO_API_KEY,
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
-                    "to": [{"email": customer_email, "name": customer_name}],
-                    "subject": SUBJECT,
-                    "htmlContent": email_content
-                }
-            )
+            BREVO_URL,
+            headers={
+                "api-key": BREVO_API_KEY,
+                "Content-Type": "application/json"
+            },
+            json={
+                "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
+                "to": [{"email": customer_email, "name": customer_name}],
+                "cc": [
+                    {"email": "harshitrathorelink@gmail.com"},
+                    {"email": "shobhitjoshi87@gmail.com"}
+                ],
+                "subject": SUBJECT,
+                "htmlContent": email_content
+            }
+        )
 
             if response.status_code == 201:
                 print(f"✅ Order confirmation email sent to {customer_email}")

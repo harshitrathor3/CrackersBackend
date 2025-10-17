@@ -28,3 +28,12 @@ SUBJECT = "Your order is successfully placed!"
 
 # Analytics
 ANALYTICS_API = os.getenv("ANALYTICS_API")
+
+
+# calculate discount on Cart value
+price_discount_values = {
+    500: 5,
+    1000: 10,
+    2000: 15,
+    5000: 20,
+}
