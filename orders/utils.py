@@ -35,6 +35,16 @@ async def validate_ids_and_qty(item_id, item_info, items_data):
         total_amt = round(total_amt, 2)
         total_discount = round(total_discount, 2)
 
+        bulk_discount_qty = item_data.get("bulk_discount_qty", None)
+        bulk_discount_percent = item_data.get("bulk_discount_percent", None)
+        total_item_qty = sum(qty for qty in item_info.values())
+
+        if bulk_discount_qty is not None and bulk_discount_percent is not None:
+            if total_item_qty >= bulk_discount_qty:
+                extra_discount = (total_amt * bulk_discount_percent) / 100
+                total_amt -= extra_discount
+                total_discount += extra_discount
+
         return True, "All size_ids are valid and stock is sufficient", total_amt, total_discount
 
     except Exception as e:

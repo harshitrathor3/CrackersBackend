@@ -80,6 +80,9 @@ async def add_item(item_data, image):
             size_info[size_id] = size_data
 
         item_data['size_info'] = size_info
+        item_data['bulk_discount_qty'] = item_data.get('bulk_discount_qty', None)
+        item_data['bulk_discount_percent'] = item_data.get('bulk_discount_percent', None)
+
         item_data['category'] = {
             "category_id": ObjectId(category_id),
         }
