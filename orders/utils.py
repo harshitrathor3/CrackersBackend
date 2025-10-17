@@ -343,7 +343,7 @@ async def create_email_content(customer_name, order_id, items_with_qty, order_da
             <p>आपको और आपके परिवार को दीपावली की हार्दिक शुभकामनाएँ! आपका जीवन रोशनी, खुशियों और उत्सवों से भर जाए 🎇</p>
         </div>
         <div class="footer">
-            <p>स्नेह सहित,<br><strong>टीम जोशी फटाका 💥</strong></p>
+            <p>स्नेह सहित,<br><strong>टीम जोशी फटाका (shop number 110) 💥</strong></p>
             <p>This is an automated email. Please do not reply to this message.</p>
         </div>
     </div>
