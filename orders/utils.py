@@ -87,7 +87,8 @@ async def get_category_wise_items(item_id, item_info, items_data, category_data)
             "item_name": item_name,
             "company": company,
             "description": description,
-            "size_info": size_info
+            "size_info": size_info,
+            "image_url": item.get("image_url", ""),
         }
 
         return category_name, order_item
